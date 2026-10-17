@@ -1,0 +1,31 @@
+# Render Blueprint for the recipe-book backend.
+# Deploy this repo on Render as a Blueprint to have the service created
+# automatically. Secrets marked `sync: false` are prompted for in the Render
+# dashboard; generated secrets are created by Render.
+services:
+  - type: web
+    name: recipe-book-backend
+    runtime: node
+    plan: free
+    branch: main
+    rootDir: .
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: APP_NAME
+        value: AppsDev API Tutorial
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CSRF_SECRET
+        generateValue: true
+      # Prompted on first deploy (never commit real values):
+      - key: DATABASE_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: BACKEND_URL
+        sync: false

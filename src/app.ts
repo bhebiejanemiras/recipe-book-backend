@@ -8,10 +8,27 @@ import routes from "@/routes";
 
 const app = express();
 
+// Behind a hosting proxy (Render/Vercel) we need the real client protocol/IP.
+app.set("trust proxy", 1);
+
+// FRONTEND_URL may contain several comma-separated origins (e.g. the
+// production domain plus Vercel preview domains).
+const allowedOrigins = ENV.FRONTEND_URL
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
 // --- Core Middleware ---
 app.use(helmet());
 app.use(cors({
-  origin: ENV.FRONTEND_URL,
+  origin(origin, callback) {
+    // Requests without an Origin header (health checks, curl, server-to-server)
+    // are always allowed; browsers only enforce CORS when an Origin is present.
+    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
   credentials: true
 }));
 
