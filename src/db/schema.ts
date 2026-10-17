@@ -3,6 +3,16 @@ import { pgTable, pgEnum, uuid, text, timestamp, integer, index } from "drizzle-
 export const role = pgEnum("Role", ["USER", "ADMIN"]);
 export const tokenType = pgEnum("TokenType", ["REFRESH", "EMAIL_VERIFY"]);
 
+// Uploaded recipe photos are stored in the database so they survive redeploys
+// and remain reachable from any environment that shares this database.
+export const images = pgTable("image", {
+  id: uuid().defaultRandom().primaryKey(),
+  mimeType: text("mime_type").notNull(),
+  data: text().notNull(),
+  size: integer().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).defaultNow().notNull(),
+});
+
 export const users = pgTable("user", {
   id: uuid().defaultRandom().primaryKey(),
   email: text().unique(), password: text(), name: text(),

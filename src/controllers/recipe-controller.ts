@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import type { AuthenticatedRequest } from "@/middlewares/auth-middleware";
-import { getRecipesService, getAllRecipesService, getRecipeService, createRecipeService, updateRecipeService, deleteRecipeService } from "@/services/recipes";
+import { getRecipesService, getAllRecipesService, getRecipeService, createRecipeService, updateRecipeService, deleteRecipeService, uploadImageService, getImageService } from "@/services/recipes";
 import { createRecipeSchema, updateRecipeSchema } from "@/schema/recipe-schema";
 
 export class RecipeController {
@@ -40,5 +40,24 @@ export class RecipeController {
     const userId = (req as AuthenticatedRequest).user!.sub;
     const result = await deleteRecipeService(req.params.id as string, userId);
     return res.status(result.code).json(result);
+  };
+
+  public uploadImage = async (req: Request, res: Response) => {
+    const result = await uploadImageService(req.body.image as string);
+    return res.status(result.code).json(result);
+  };
+
+  // Public: recipe photos are served straight to <img> tags without cookies.
+  public getImage = async (req: Request, res: Response) => {
+    const result = await getImageService(req.params.id as string);
+    if (result.code !== 200) return res.status(result.code).json(result);
+
+    res.setHeader("Content-Type", result.image.mimeType);
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    // Helmet defaults Cross-Origin-Resource-Policy to "same-origin", which stops
+    // browsers from loading the photo when the frontend is on a different origin
+    // (for example localhost:5173 vs the API on :7000, or Vercel vs Render).
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    return res.send(result.image.buffer);
   };
 }

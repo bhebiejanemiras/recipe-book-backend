@@ -4,3 +4,5 @@ export * from "@/services/recipes/get-recipe-service";
 export * from "@/services/recipes/create-recipe-service";
 export * from "@/services/recipes/update-recipe-service";
 export * from "@/services/recipes/delete-recipe-service";
+export * from "@/services/recipes/upload-image-service";
+export * from "@/services/recipes/get-image-service";
